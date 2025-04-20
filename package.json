@@ -1,0 +1,13 @@
+{
+  "name": "tracking-link-website",
+  "version": "1.0.0",
+  "description": "Website to create tracking links with location tracking and map display",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "uuid": "^9.0.0"
+  }
+}
