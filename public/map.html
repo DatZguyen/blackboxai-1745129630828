@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visitor Locations Map</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity=""
+    crossorigin=""
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    #map {
+      height: 80vh;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <h1 class="text-2xl font-semibold mb-6 text-center">Visitor Locations Map</h1>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="" crossorigin=""></script>
+  <script>
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    const map = L.map('map').setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(map);
+
+    const linkId = getQueryParam('id');
+    if (!linkId) {
+      alert('Invalid tracking link ID.');
+    } else {
+      fetch('/api/locations/' + linkId)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.visitors && data.visitors.length > 0) {
+            data.visitors.forEach((visitor) => {
+              const marker = L.marker([visitor.lat, visitor.lng]).addTo(map);
+              const date = new Date(visitor.timestamp);
+              marker.bindPopup(`Visited at: ${date.toLocaleString()}`);
+            });
+            // Zoom map to fit all markers
+            const group = new L.featureGroup(data.visitors.map(v => L.marker([v.lat, v.lng])));
+            map.fitBounds(group.getBounds().pad(0.5));
+          } else {
+            alert('No visitor locations found for this tracking link.');
+          }
+        })
+        .catch(() => {
+          alert('Failed to load visitor locations.');
+        });
+    }
+  </script>
+</body>
+</html>
